@@ -17,7 +17,7 @@
 //==============================================================================
 /**
 */
-class HelloVstAudioProcessorEditor  : public AudioProcessorEditor
+class HelloVstAudioProcessorEditor  : public AudioProcessorEditor, public Slider::Listener
 {
 public:
     HelloVstAudioProcessorEditor (HelloVstAudioProcessor&);
@@ -32,8 +32,10 @@ private:
     // access the processor object that created it.
     HelloVstAudioProcessor& processor;
 
-	/* THIS IS A SLIDER :)*/
-	/*Slider midiVolume;*/
+	// THIS IS A SLIDER :)
+	Slider mySlider;
+
+	void sliderValueChanged(Slider *slider);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HelloVstAudioProcessorEditor)
 };

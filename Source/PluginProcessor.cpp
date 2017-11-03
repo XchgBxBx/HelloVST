@@ -89,6 +89,8 @@ void HelloVstAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
+
+	gain = 0.5;
 }
 
 void HelloVstAudioProcessor::releaseResources()
@@ -145,7 +147,7 @@ void HelloVstAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer
 
 		for (int i = 0; i < buffer.getNumSamples(); ++i)
 		{
-			channelData[i] = Random::getSystemRandom().nextFloat() * 0.125f - 0.0625f;
+			channelData[i] = (Random::getSystemRandom().nextFloat() * 0.125f - 0.0625f) * gain;
 		}
     }
 }
@@ -173,6 +175,11 @@ void HelloVstAudioProcessor::setStateInformation (const void* data, int sizeInBy
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
+}
+
+void HelloVstAudioProcessor::updateAngleDelta()
+{
+//	const double cyclesPerSample = fre
 }
 
 //==============================================================================
