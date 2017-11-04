@@ -28,7 +28,8 @@ public:
     void resized() override;
 
 	// THIS IS A SLIDER :)
-	Slider noiseGainSlider;
+	Slider gainSlider;
+	Slider frequencySlider;
 
 private:
     // This reference is provided as a quick way for your editor to

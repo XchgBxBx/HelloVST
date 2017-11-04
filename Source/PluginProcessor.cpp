@@ -25,6 +25,10 @@ HelloVstAudioProcessor::HelloVstAudioProcessor()
                        )
 #endif
 {
+	currentAngle = 0.0f;
+	currentSampleRate = 0.0f;
+	angleDelta = 0.0f;
+	frequency = 0.0f;
 }
 
 HelloVstAudioProcessor::~HelloVstAudioProcessor()
@@ -89,8 +93,8 @@ void HelloVstAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlo
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-
-	gain = 0.5;
+	currentSampleRate = sampleRate;
+	updateAngleDelta();
 }
 
 void HelloVstAudioProcessor::releaseResources()
@@ -128,6 +132,10 @@ void HelloVstAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer
     const int totalNumInputChannels  = getTotalNumInputChannels();
     const int totalNumOutputChannels = getTotalNumOutputChannels();
 
+	//===================================================================
+	// Midi Processing
+	//===================================================================
+
 	MidiMessage message;
 	int time;
 
@@ -148,19 +156,24 @@ void HelloVstAudioProcessor::processBlock (AudioSampleBuffer& buffer, MidiBuffer
     for (int i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        float* channelData = buffer.getWritePointer (channel);
 
-        // ..do something to the data...
+	//===================================================================
+	// Audio Processing
+	//===================================================================
 
-		for (int i = 0; i < buffer.getNumSamples(); ++i)
-		{
-			channelData[i] = (Random::getSystemRandom().nextFloat() * 0.125f - 0.0625f) * gain;
-		}
-    }
+	float* channelData = buffer.getWritePointer(0);
+
+	for (int i = 0; i < buffer.getNumSamples(); ++i)
+	{
+		const float currentSample = (float)std::sin(currentAngle);
+		currentAngle += angleDelta;
+
+		channelData[i] = currentSample * gain;
+	}
+
+	// copy first channel buffer to other channels
+	for(int channel = 1; channel < totalNumOutputChannels; ++channel)
+		buffer.copyFrom(channel, 0, channelData, buffer.getNumSamples());
 }
 
 //==============================================================================
@@ -188,26 +201,51 @@ void HelloVstAudioProcessor::setStateInformation (const void* data, int sizeInBy
     // whose contents will have been created by the getStateInformation() call.
 }
 
-void HelloVstAudioProcessor::updateGain(int value)
+void HelloVstAudioProcessor::updateGain(float value)
 {
-	gain = (value / 127.0f) * 0.5f;
+	gain = value;
+}
+
+void HelloVstAudioProcessor::updateFrequency(float value)
+{
+	if (currentSampleRate > 0.0)
+	{
+		frequency = value;
+		updateAngleDelta();
+	}
 }
 
 void HelloVstAudioProcessor::receiveMidiCC(MidiMessage message)
 {
 	int cc = message.getControllerNumber();
+	int value = message.getControllerValue();
+
 	if (cc == 7) // Volume CC
 	{
-		int value = message.getControllerValue();
-
 		const MessageManagerLock mmlock;
 
 		auto editor = static_cast<HelloVstAudioProcessorEditor*>(getActiveEditor());
 
-		editor->noiseGainSlider.setValue(value);
-		editor->noiseGainSlider.repaint();
+		editor->gainSlider.setValue(value / 127.0f);
+		editor->gainSlider.repaint();
+	}
+	else if (cc == 10) // Pan CC
+	{
+		const MessageManagerLock mmlock;
+
+		auto editor = static_cast<HelloVstAudioProcessorEditor*>(getActiveEditor());
+
+		editor->frequencySlider.setValue((value / 127.0f * 5000.0f) + 50.0f);
+		editor->frequencySlider.repaint();
 	}
 }
+
+void HelloVstAudioProcessor::updateAngleDelta()
+{
+	const double cyclesperSample = frequency / currentSampleRate;
+	angleDelta = cyclesperSample * 2.0 * double_Pi;
+}
+
 
 //==============================================================================
 // This creates new instances of the plugin..

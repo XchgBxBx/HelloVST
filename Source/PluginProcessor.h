@@ -56,13 +56,24 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
 	
-	void updateGain(int value);
+
+	void updateGain(float value);
+	void updateFrequency(float value);
 
 private:
 
-	double gain;
+	double currentSampleRate;
+	double currentAngle;
+	double angleDelta;
+	double frequency;
+
+	double gain; // noise gain
+
+	//==============================================================================
 
 	void receiveMidiCC(MidiMessage message);
+
+	void updateAngleDelta();
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HelloVstAudioProcessor)
