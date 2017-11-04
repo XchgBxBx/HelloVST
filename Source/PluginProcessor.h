@@ -55,13 +55,14 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-	double gain;
+	
+	void updateGain(int value);
 
 private:
 
-	
+	double gain;
 
-	void updateAngleDelta();
+	void receiveMidiCC(MidiMessage message);
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (HelloVstAudioProcessor)

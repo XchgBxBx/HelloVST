@@ -21,15 +21,15 @@ HelloVstAudioProcessorEditor::HelloVstAudioProcessorEditor (HelloVstAudioProcess
     setSize (200, 200);
 
 
-	mySlider.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
-	mySlider.setRange(0.0, 0.5, 0.01);
-	mySlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, false, 90, 0);
-	mySlider.setPopupDisplayEnabled(true, this);
-	mySlider.setTextValueSuffix(" Gain");
-	mySlider.setValue(0.25);
-	mySlider.addListener(this);
+	noiseGainSlider.setSliderStyle(Slider::SliderStyle::LinearBarVertical);
+	noiseGainSlider.setRange(0.0, 127.0, 1.0);
+	noiseGainSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, false, 90, 0);
+	noiseGainSlider.setPopupDisplayEnabled(true, this);
+	noiseGainSlider.setTextValueSuffix(" Gain");
+	noiseGainSlider.setValue(64.0);
+	noiseGainSlider.addListener(this);
 
-	addAndMakeVisible(&mySlider);
+	addAndMakeVisible(&noiseGainSlider);
 }
 
 HelloVstAudioProcessorEditor::~HelloVstAudioProcessorEditor()
@@ -52,15 +52,16 @@ void HelloVstAudioProcessorEditor::resized()
     // This is generally where you'll want to lay out the positions of any
     // subcomponents in your editor..
 
-	mySlider.setBounds(40, 30, 20, getHeight() - 60);
+	noiseGainSlider.setBounds(40, 30, 20, getHeight() - 60);
 }
 
 
 void HelloVstAudioProcessorEditor::sliderValueChanged(Slider *slider)
 {
-	String message;
 	double value = slider->getValue();
-	message << "ur new value: " << value;
-	processor.gain = value;
-	Logger::getCurrentLogger()->writeToLog(message);
+	if (slider == &noiseGainSlider)
+	{
+		processor.updateGain(value);
+	}
+	
 }
